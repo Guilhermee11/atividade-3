@@ -1,0 +1,210 @@
+import random
+
+# BUBBLE SORT
+
+def bubble_sort(vetor):
+    a = vetor.copy()
+    comparacoes = 0
+    trocas = 0
+    n = len(a)
+
+    for i in range(n - 1):
+        houve_troca = False
+
+        for j in range(n - 1 - i):
+            comparacoes += 1
+
+            if a[j] > a[j + 1]:
+                a[j], a[j + 1] = a[j + 1], a[j]
+                trocas += 1
+                houve_troca = True
+
+        if not houve_troca:
+            break
+
+    return a, comparacoes, trocas
+
+# INSERTION SORT
+# Movimentação = cada escrita em uma posição do vetor,
+# incluindo deslocamentos e inserção da chave.
+
+def insertion_sort(vetor):
+    a = vetor.copy()
+    comparacoes = 0
+    movimentacoes = 0
+
+    for i in range(1, len(a)):
+        chave = a[i]
+        j = i - 1
+
+        while j >= 0:
+            comparacoes += 1
+
+            if a[j] > chave:
+                a[j + 1] = a[j]
+                movimentacoes += 1
+                j -= 1
+            else:
+                break
+
+        a[j + 1] = chave
+        movimentacoes += 1
+
+    return a, comparacoes, movimentacoes
+
+
+
+# SELECTION SORT
+
+def selection_sort(vetor):
+    a = vetor.copy()
+    comparacoes = 0
+    trocas = 0
+    n = len(a)
+
+    for i in range(n - 1):
+        menor = i
+
+        for j in range(i + 1, n):
+            comparacoes += 1
+
+            if a[j] < a[menor]:
+                menor = j
+
+        if menor != i:
+            a[i], a[menor] = a[menor], a[i]
+            trocas += 1
+
+    return a, comparacoes, trocas
+
+
+
+# QUICK SORT
+# Particionamento de Lomuto com pivô central.
+# Movimentação = troca entre posições distintas.
+
+def quick_sort(vetor):
+    a = vetor.copy()
+    comparacoes = 0
+    movimentacoes = 0
+
+    def ordenar(inicio, fim):
+        nonlocal comparacoes, movimentacoes
+
+        if inicio >= fim:
+            return
+
+        meio = (inicio + fim) // 2
+
+        # Leva o valor central para o final como pivô.
+        if meio != fim:
+            a[meio], a[fim] = a[fim], a[meio]
+            movimentacoes += 1
+
+        pivo = a[fim]
+        i = inicio
+
+        for j in range(inicio, fim):
+            comparacoes += 1
+
+            if a[j] <= pivo:
+                if i != j:
+                    a[i], a[j] = a[j], a[i]
+                    movimentacoes += 1
+                i += 1
+
+        if i != fim:
+            a[i], a[fim] = a[fim], a[i]
+            movimentacoes += 1
+
+        ordenar(inicio, i - 1)
+        ordenar(i + 1, fim)
+
+    ordenar(0, len(a) - 1)
+    return a, comparacoes, movimentacoes
+
+
+# EXECUÇÃO E APRESENTAÇÃO DOS RESULTADOS
+
+def executar_experimento(original):
+    # Quatro cópias idênticas do mesmo vetor
+    vetor_bubble = original.copy()
+    vetor_insertion = original.copy()
+    vetor_selection = original.copy()
+    vetor_quick = original.copy()
+
+    resultado_bubble = bubble_sort(vetor_bubble)
+    resultado_insertion = insertion_sort(vetor_insertion)
+    resultado_selection = selection_sort(vetor_selection)
+    resultado_quick = quick_sort(vetor_quick)
+
+    # Confere se todos ordenaram corretamente
+    esperado = sorted(original)
+
+    assert resultado_bubble[0] == esperado
+    assert resultado_insertion[0] == esperado
+    assert resultado_selection[0] == esperado
+    assert resultado_quick[0] == esperado
+
+    return {
+        "Tamanho": len(original),
+        "Bubble Comp.": resultado_bubble[1],
+        "Bubble Trocas": resultado_bubble[2],
+        "Insertion Comp.": resultado_insertion[1],
+        "Insertion Mov.": resultado_insertion[2],
+        "Selection Comp.": resultado_selection[1],
+        "Selection Trocas": resultado_selection[2],
+        "Quick Comp.": resultado_quick[1],
+        "Quick Mov.": resultado_quick[2]
+    }
+
+
+def mostrar_tabela(resultados):
+    colunas = list(resultados[0].keys())
+
+    # Larguras para alinhar as colunas no terminal
+    larguras = {
+        c: max(len(c), max(len(str(r[c])) for r in resultados))
+        for c in colunas
+    }
+
+    print(" | ".join(c.ljust(larguras[c]) for c in colunas))
+    print("-+-".join("-" * larguras[c] for c in colunas))
+
+    for r in resultados:
+        print(" | ".join(str(r[c]).rjust(larguras[c])
+                         for c in colunas))
+
+
+# Etapa 3: vetores aleatórios de 10, 20 e 1.000 elementos
+random.seed(42)  # Facilita repetir o mesmo experimento
+
+resultados = []
+
+for tamanho in [10, 20, 1000]:
+    original = [random.randint(1, 10000)
+                for _ in range(tamanho)]
+
+    resultados.append(executar_experimento(original))
+
+print("RESULTADOS DOS VETORES ALEATÓRIOS")
+mostrar_tabela(resultados)
+
+
+
+# DESAFIO ADICIONAL
+
+random.seed(42)
+base = [random.randint(1, 10000) for _ in range(1000)]
+
+cenarios = {
+    "Aleatório": base.copy(),
+    "Ordenado": sorted(base),
+    "Inverso": sorted(base, reverse=True)
+}
+
+print("\nDESAFIO ADICIONAL - 1.000 ELEMENTOS")
+
+for nome, vetor in cenarios.items():
+    print(f"\nCenário: {nome}")
+    mostrar_tabela([executar_experimento(vetor)])
